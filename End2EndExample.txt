@@ -1,0 +1,95 @@
+
+class HomePage {
+constructor(page) {
+this.page = page;
+this.startShoppingButton = page.locator('#start-shopping'); // example
+}
+
+async goto() {
+await this.page.goto('https://example.com/home');
+}
+
+async goToProductPage() {
+await this.startShoppingButton.click();
+}
+}
+
+module.exports = { HomePage };
+
+
+class ProductPage {
+constructor(page) {
+this.page = page;
+this.firstProduct = page.locator('.product-card >> nth=0');
+this.addToCartBtn = page.locator('#add-to-cart');
+this.goToCheckoutBtn = page.locator('#checkout');
+}
+
+async selectFirstProduct() {
+await this.firstProduct.click();
+}
+
+async addToCart() {
+await this.addToCartBtn.click();
+}
+
+async goToCheckout() {
+await this.goToCheckoutBtn.click();
+}
+}
+
+module.exports = { ProductPage };
+
+class CheckoutPage {
+constructor(page) {
+this.page = page;
+this.pageTitle = page.locator('h1');
+this.placeOrderBtn = page.locator('#place-order');
+}
+
+async verifyCheckoutPageLoaded() {
+await this.pageTitle.waitFor();
+const title = await this.pageTitle.textContent();
+return title.includes('Checkout');
+}
+
+async placeOrder() {
+await this.placeOrderBtn.click();
+}
+}
+
+module.exports = { CheckoutPage };
+
+
+Tests/e2etest.js:
+
+const { chromium } = require('playwright');
+const { HomePage } = require('../pages/HomePage');
+const { ProductPage } = require('../pages/ProductPage');
+const { CheckoutPage } = require('../pages/CheckoutPage');
+
+(async () => {
+const browser = await chromium.launch({ headless: false });
+const context = await browser.newContext();
+const page = await context.newPage();
+
+// Create page object instances
+const homePage = new HomePage(page);
+const productPage = new ProductPage(page);
+const checkoutPage = new CheckoutPage(page);
+
+//  Home Page
+await homePage.goto();
+await homePage.goToProductPage();
+
+//  Product Page
+await productPage.selectFirstProduct();
+await productPage.addToCart();
+await productPage.goToCheckout();
+
+//  Checkout Page
+const isOnCheckout = await checkoutPage.verifyCheckoutPageLoaded();
+console.log('Checkout page loaded:', isOnCheckout);
+await checkoutPage.placeOrder();
+await browser.close();
+})();
