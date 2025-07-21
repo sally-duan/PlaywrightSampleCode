@@ -1,0 +1,54 @@
+Java version API get and post:	
+
+Playwright playwright = Playwright.create();
+APIRequestContext request = playwright.request().newContext();
+APIResponse response = request.get("http://localhost:8080/api/users/1");	
+		
+System.out.println("Status code : "+response.status());
+String responseBody = response.text();
+System.out.println("Response Body : "+responseBody);		
+		
+JsonObject jsonResposne = JsonParser.parseString(responseBody).getAsJsonObject();
+String firstName = jsonResposne.get("firstName").getAsString();
+request.dispose();
+playwright.close();
+
+
+
+Playwright playwright = Playwright.create();
+APIRequestContext request = playwright.request().newContext();
+		
+Map<String,Object> data = new HashMap<>();
+data.put("email", "mytest@gmail.com");
+data.put("firstName", "sally");
+data.put("lastName", "duan");		
+APIResponse response = request.post("http://localhost:8080/api/users",RequestOptions.create().setData(data));
+
+System.out.println("Status code: "+response.status());
+//analyze the structure of the body
+request.dispose();
+playwright.close();
+
+JavaScript version:
+Javascript :
+const { request, expect } = require('@playwright/test');
+
+(async () => {
+const apiContext = await request.newContext();
+//  GET Request Example
+const getResponse = await apiContext.get('https://jsonplaceholder.typicode.com/posts/1');
+const getData = await getResponse.json();
+console.log('GET Response:', getData);
+
+// POST Request Example
+  const postResponse = await apiContext.post('https://jsonplaceholder.typicode.com/posts', {
+    data: {
+      title: 'hello',
+      body: 'there',
+      userId: 1,
+    },
+  });
+const postData = await postResponse.json();
+console.log('POST Response:', postData);
+await apiContext.dispose();
+})();
